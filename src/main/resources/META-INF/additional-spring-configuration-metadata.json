@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "dataset-manager.url",
+      "type": "java.lang.String",
+      "description": "Sets the url to communicate with the dataset."
+    }
+  ]
+}
