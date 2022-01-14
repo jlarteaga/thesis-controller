@@ -4,8 +4,11 @@ import com.rabbitmq.client.Channel;
 import dev.jlarteaga.coordinator.messaging.nlpmanager.NlpManagerService;
 import dev.jlarteaga.coordinator.messaging.payload.ProcessTextResponsePayload;
 import dev.jlarteaga.coordinator.messaging.payload.TextCreatedEventPayload;
+import dev.jlarteaga.coordinator.messaging.payload.TextPatchedEventPayload;
 import dev.jlarteaga.coordinator.model.TextProcessingStatus;
 import dev.jlarteaga.coordinator.webclient.DatasetManagerService;
+import dev.jlarteaga.coordinator.webclient.dto.text.GetTextMetaDetailedDTO;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -25,7 +28,7 @@ public class TextEventHandler {
 
     public static final Set<String> PATTERNS = Set.of(
             TextCreatedEventPayload.PATTERN,
-            "text-patched");
+            TextPatchedEventPayload.PATTERN);
     private final NlpManagerService nlpManagerService;
     private final DatasetManagerService datasetManagerService;
     Logger logger = LoggerFactory.getLogger(TextEventHandler.class);
@@ -40,10 +43,10 @@ public class TextEventHandler {
 
     public Mono<Boolean> dispatch(String pattern, Map<String, Object> unparsedPayload) {
         try {
-            if ("text-created".equals(pattern)) {
+            if (TextCreatedEventPayload.PATTERN.equals(pattern)) {
                 return this.processTextCreatedEvent(TextCreatedEventPayload.fromUnparsedPayload(unparsedPayload));
-//            } else if ("text-patched".equals(pattern)) {
-//                return this.processTextPatchedEvent(payload);
+            } else if (TextPatchedEventPayload.PATTERN.equals(pattern)) {
+                return this.processTextPatchedEvent(TextPatchedEventPayload.fromUnparsedPayload(unparsedPayload));
             } else {
                 throw new IllegalArgumentException("Cannot process pattern " + pattern);
             }
@@ -53,18 +56,30 @@ public class TextEventHandler {
         }
     }
 
-//    private Mono<Boolean> processTextPatchedEvent(TextPatchedEventPayload payload) {
-//    }
+    private Mono<Boolean> processTextPatchedEvent(TextPatchedEventPayload payload) {
+        return this.datasetManagerService.getText(payload.getUuid())
+                .flatMap(text -> {
+                    if (payload.getKeys().contains("sent") ||
+                            ("not-proc".equals(text.getProcessingStatus()) &&
+                                    Strings.isNotBlank(text.getSent()) &&
+                                    text.getStatus().startsWith("tr-") &&
+                                    !"tr-auto".equals(text.getStatus()))
+                    ) {
+                        return this.startProcessingText(text);
+                    } else {
+                        return Mono.just(true);
+                    }
+                });
+    }
 
     private Mono<Boolean> processTextCreatedEvent(TextCreatedEventPayload payload) {
         return this.datasetManagerService.getText(payload.getUuid())
-                .flatMap(text -> this.datasetManagerService.updateTextProcessingStatus(text.getUuid(), TextProcessingStatus.Processing, true)
-                        .flatMap(response -> this.nlpManagerService.sendProcessTextRequest(text.getUuid(), text.getSent()))
-                )
-                .onErrorResume(error -> {
-                    error.printStackTrace();
-                    return Mono.just(false);
-                });
+                .flatMap(this::startProcessingText);
+    }
+
+    private Mono<Boolean> startProcessingText(GetTextMetaDetailedDTO text) {
+        return this.datasetManagerService.updateTextProcessingStatus(text.getUuid(), TextProcessingStatus.Processing, true)
+                .flatMap(response -> this.nlpManagerService.sendProcessTextRequest(text.getUuid(), text.getSent()));
     }
 
     @RabbitListener(
