@@ -53,9 +53,7 @@ public class TextEventHandler {
                 .flatMap(text -> {
                     if (payload.getKeys().contains("sent") ||
                             ("not-proc".equals(text.getProcessingStatus()) &&
-                                    Strings.isNotBlank(text.getSent()) &&
-                                    text.getStatus().startsWith("tr-") &&
-                                    !"tr-auto".equals(text.getStatus()))
+                                    this.hasValidText(text))
                     ) {
                         return this.startProcessingText(text);
                     } else {
@@ -64,12 +62,18 @@ public class TextEventHandler {
                 });
     }
 
+    public boolean hasValidText(GetTextMetaDetailedDTO text) {
+        return Strings.isNotBlank(text.getSent()) &&
+                text.getStatus().startsWith("tr-") &&
+                !"tr-auto".equals(text.getStatus());
+    }
+
     private Mono<Boolean> processTextCreatedEvent(TextCreatedEventPayload payload) {
         return this.datasetManagerService.getText(payload.getUuid())
                 .flatMap(this::startProcessingText);
     }
 
-    private Mono<Boolean> startProcessingText(GetTextMetaDetailedDTO text) {
+    public Mono<Boolean> startProcessingText(GetTextMetaDetailedDTO text) {
         return this.datasetManagerService.updateTextProcessingStatus(text.getUuid(), TextProcessingStatus.Processing, true)
                 .flatMap(response -> this.nlpManagerService.sendProcessTextRequest(text.getUuid(), text.getSent()));
     }

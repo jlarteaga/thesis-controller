@@ -9,6 +9,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Added queue processing to handle `text-created` and `text-patched` dataset events.
+- Added `POST /operations/process-text/texts/:uuid` to for the processing for a single text.
+
 ### Changed
 
 ### Removed
