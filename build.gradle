@@ -39,3 +39,7 @@ compileJava.inputs.files(processResources)
 test {
     useJUnitPlatform()
 }
+
+jar {
+    enabled false
+}

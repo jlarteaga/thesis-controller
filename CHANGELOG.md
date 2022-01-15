@@ -14,6 +14,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Added `POST /process-text/questions/{uuid}` to process a question.
 - Added `POST /process-text/student-answers/{uuid}` to process a student-answer.
 - Added `POST /process-text/questions/{uuid}/student-answers` to process all the student-answers of a question.
+- Dockerized project.
 
 ### Changed
 
