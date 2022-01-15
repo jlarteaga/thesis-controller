@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "dataset-manager.url",
+      "type": "java.lang.String",
+      "description": "Sets the url to communicate with the dataset."
+    },
+    {
+      "name": "security.secret",
+      "type": "java.lang.String",
+      "description": "Sets the secret to use for JWT validation. Default: 'abc123.'."
+    }
+  ]
+}
