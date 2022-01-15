@@ -6,6 +6,7 @@ import dev.jlarteaga.coordinator.webclient.dto.PatchResponseDTO;
 import dev.jlarteaga.coordinator.webclient.dto.auth.LoginRequestDTO;
 import dev.jlarteaga.coordinator.webclient.dto.auth.LoginResponseDTO;
 import dev.jlarteaga.coordinator.webclient.dto.question.GetQuestionSummarizedDTO;
+import dev.jlarteaga.coordinator.webclient.dto.studentanswer.GetStudentAnswerSummarizedDTO;
 import dev.jlarteaga.coordinator.webclient.dto.text.GetTextMetaDetailedDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +75,24 @@ public class DatasetManagerService {
         return unauthorizedWebClient.get().uri("texts/{uuid}", uuid)
                 .retrieve()
                 .bodyToMono(GetTextMetaDetailedDTO.class);
+    }
+
+    public Mono<GetTextMetaDetailedDTO> getTextByQuestion(String uuid) {
+        return unauthorizedWebClient.get().uri("questions/{uuid}/text", uuid)
+                .retrieve()
+                .bodyToMono(GetTextMetaDetailedDTO.class);
+    }
+
+    public Mono<GetTextMetaDetailedDTO> getTextByStudentAnswer(String uuid) {
+        return unauthorizedWebClient.get().uri("student-answers/{uuid}/text", uuid)
+                .retrieve()
+                .bodyToMono(GetTextMetaDetailedDTO.class);
+    }
+
+    public Flux<GetStudentAnswerSummarizedDTO> getStudentAnswersByQuestion(String uuid) {
+        return unauthorizedWebClient.get().uri("questions/{uuid}/student-answers", uuid)
+                .retrieve()
+                .bodyToFlux(GetStudentAnswerSummarizedDTO.class);
     }
 
     public Mono<PatchResponseDTO> updateTextProcessingStatus(String uuid, TextProcessingStatus status, boolean silent) {

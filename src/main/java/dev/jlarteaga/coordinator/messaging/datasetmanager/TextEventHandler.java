@@ -6,6 +6,7 @@ import dev.jlarteaga.coordinator.messaging.payload.TextPatchedEventPayload;
 import dev.jlarteaga.coordinator.model.TextProcessingStatus;
 import dev.jlarteaga.coordinator.webclient.DatasetManagerService;
 import dev.jlarteaga.coordinator.webclient.dto.text.GetTextMetaDetailedDTO;
+import dev.jlarteaga.coordinator.webclient.dto.text.GetTextSummarized;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +63,7 @@ public class TextEventHandler {
                 });
     }
 
-    public boolean hasValidText(GetTextMetaDetailedDTO text) {
+    public boolean hasValidText(GetTextSummarized text) {
         return Strings.isNotBlank(text.getSent()) &&
                 text.getStatus().startsWith("tr-") &&
                 !"tr-auto".equals(text.getStatus());
