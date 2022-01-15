@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'dev.jlarteaga'
-version = '0.0.1-SNAPSHOT'
+version = '0.1.0-SNAPSHOT'
 sourceCompatibility = '11'
 
 configurations {
@@ -30,8 +30,16 @@ dependencies {
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation 'org.springframework.amqp:spring-rabbit-test'
     testImplementation 'org.springframework.security:spring-security-test'
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+    implementation 'com.nimbusds:nimbus-jose-jwt:9.15.2'
 }
+
+compileJava.inputs.files(processResources)
 
 test {
     useJUnitPlatform()
+}
+
+jar {
+    enabled false
 }
