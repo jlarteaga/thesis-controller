@@ -1,8 +1,6 @@
 package dev.jlarteaga.coordinator.messaging.datasetmanager;
 
-import com.rabbitmq.client.Channel;
 import dev.jlarteaga.coordinator.messaging.nlpmanager.NlpManagerService;
-import dev.jlarteaga.coordinator.messaging.payload.ProcessTextResponsePayload;
 import dev.jlarteaga.coordinator.messaging.payload.TextCreatedEventPayload;
 import dev.jlarteaga.coordinator.messaging.payload.TextPatchedEventPayload;
 import dev.jlarteaga.coordinator.model.TextProcessingStatus;
@@ -11,17 +9,11 @@ import dev.jlarteaga.coordinator.webclient.dto.text.GetTextMetaDetailedDTO;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.support.AmqpHeaders;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
-
-import static dev.jlarteaga.coordinator.messaging.MessagingConfiguration.PROCESS_TEXT_RESPONSES_QUEUE;
 
 @Component
 public class TextEventHandler {
@@ -82,30 +74,4 @@ public class TextEventHandler {
                 .flatMap(response -> this.nlpManagerService.sendProcessTextRequest(text.getUuid(), text.getSent()));
     }
 
-    @RabbitListener(
-            queues = PROCESS_TEXT_RESPONSES_QUEUE,
-            ackMode = "MANUAL"
-    )
-    private void processedTextHandler(
-            ProcessTextResponsePayload payload,
-            Channel channel,
-            @Header(AmqpHeaders.DELIVERY_TAG) long tag) {
-        this.datasetManagerService.updateProcessedText(payload.getTextUuid(), payload.getProcessedText(), true)
-                .doOnError(error -> {
-                    try {
-                        channel.basicNack(tag, false, false);
-                    } catch (IOException ioe) {
-                        logger.error(ioe.getMessage(), ioe);
-                    }
-                    logger.error("Could not handle process-text response", error);
-                })
-                .subscribe(response -> {
-                    try {
-                        channel.basicAck(tag, false);
-                    } catch (IOException ioe) {
-                        logger.error(ioe.getMessage(), ioe);
-                    }
-                });
-
-    }
 }
