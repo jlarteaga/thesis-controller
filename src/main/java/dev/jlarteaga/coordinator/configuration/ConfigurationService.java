@@ -10,4 +10,8 @@ public class ConfigurationService {
     @Getter
     @Value("${dataset-manager.url}")
     private String datasetManagerUrl;
+
+    @Getter
+    @Value("${security.secret}")
+    private String securitySecret;
 }
