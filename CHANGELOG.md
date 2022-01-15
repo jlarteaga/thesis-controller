@@ -9,13 +9,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Added queue processing to handle `text-created` and `text-patched` dataset events.
-- Added `POST /operations/process-text/texts/:uuid` to process a single text.
-- Added `POST /process-text/questions/{uuid}` to process a question.
-- Added `POST /process-text/student-answers/{uuid}` to process a student-answer.
-- Added `POST /process-text/questions/{uuid}/student-answers` to process all the student-answers of a question.
-- Dockerized project.
-
 ### Changed
 
 ### Removed
@@ -24,5 +17,18 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Security
 
+## [0.1.0]
+
+### Added
+
+- Added queue processing to handle `text-created` and `text-patched` dataset events.
+- Added `POST /operations/process-text/texts/:uuid` to process a single text.
+- Added `POST /process-text/questions/{uuid}` to process a question.
+- Added `POST /process-text/student-answers/{uuid}` to process a student-answer.
+- Added `POST /process-text/questions/{uuid}/student-answers` to process all the student-answers of a question.
+- Dockerized project.
+
 [Unreleased]: https://github.com/jlarteaga/thesis-coordinator
+
+[0.1.0]: https://github.com/jlarteaga/thesis-coordinator/releases/tag/0.1.0
 
