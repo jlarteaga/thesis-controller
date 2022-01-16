@@ -10,6 +10,7 @@ import dev.jlarteaga.coordinator.utils.freeling.SynsetExtractor;
 import dev.jlarteaga.coordinator.webclient.DatasetManagerService;
 import dev.jlarteaga.coordinator.webclient.dto.text.GetTextDetailedDTO;
 import dev.jlarteaga.coordinator.webclient.dto.text.GetTextMetaDetailedDTO;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -17,8 +18,11 @@ import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 
 import static dev.jlarteaga.coordinator.messaging.MessagingConfiguration.PROCESS_TEXT_RESPONSES_QUEUE;
@@ -149,7 +153,7 @@ public class NlpCoordinator {
     private Mono<OperationResponse> processSimilarityMatrixForStudentAnswerText(GetTextMetaDetailedDTO text) {
         return this.datasetManagerService.getStudentAnswer(text.getParent())
                 .flatMap(studentAnswer -> {
-                    if (ModelValidator.hasNotProcessedText(studentAnswer.getText())) {
+                    if (!ModelValidator.hasProcessedText(studentAnswer.getText())) {
                         return Mono.just(new OperationResponse(
                                 false,
                                 "Could not process StudentAnswer[" + studentAnswer.getUuid() + "] because its text is not processed yet."
@@ -161,7 +165,7 @@ public class NlpCoordinator {
                                 "Could not process StudentAnswer[" + studentAnswer.getUuid() + "] because it has no question (?)"
                         ));
                     }
-                    if (ModelValidator.hasNotProcessedText(studentAnswer.getQuestion().getAnswer())) {
+                    if (!ModelValidator.hasProcessedText(studentAnswer.getQuestion().getAnswer())) {
                         return Mono.just(new OperationResponse(
                                 false,
                                 "Could not process StudentAnswer[" +
