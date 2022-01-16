@@ -2,6 +2,8 @@ package dev.jlarteaga.coordinator.controller;
 
 import dev.jlarteaga.coordinator.controller.dto.OperationResponse;
 import dev.jlarteaga.coordinator.messaging.datasetmanager.TextEventHandler;
+import dev.jlarteaga.coordinator.messaging.nlpmanager.NlpCoordinator;
+import dev.jlarteaga.coordinator.utils.ModelValidator;
 import dev.jlarteaga.coordinator.webclient.DatasetManagerService;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,10 +22,16 @@ public class OperationsController {
 
     private final DatasetManagerService datasetManagerService;
     private final TextEventHandler textEventHandler;
+    private final NlpCoordinator nlpCoordinator;
 
-    public OperationsController(DatasetManagerService datasetManagerService, TextEventHandler textEventHandler) {
+    public OperationsController(
+            DatasetManagerService datasetManagerService,
+            TextEventHandler textEventHandler,
+            NlpCoordinator nlpCoordinator
+    ) {
         this.datasetManagerService = datasetManagerService;
         this.textEventHandler = textEventHandler;
+        this.nlpCoordinator = nlpCoordinator;
     }
 
     @PostMapping("/process-text/texts/{uuid}")
@@ -33,7 +41,7 @@ public class OperationsController {
     ) {
         return this.datasetManagerService.getText(uuid)
                 .flatMap(text -> {
-                    if (this.textEventHandler.hasValidText(text)) {
+                    if (ModelValidator.hasValidTranslationText(text)) {
                         return this.textEventHandler.startProcessingText(text);
                     } else {
                         return Mono.error(new IllegalArgumentException("The text is not valid for processing"));
@@ -50,7 +58,7 @@ public class OperationsController {
     ) {
         return this.datasetManagerService.getTextByQuestion(uuid)
                 .flatMap(text -> {
-                    if (this.textEventHandler.hasValidText(text)) {
+                    if (ModelValidator.hasValidTranslationText(text)) {
                         return this.textEventHandler.startProcessingText(text);
                     } else {
                         return Mono.error(new IllegalArgumentException("The text is not valid for processing"));
@@ -67,7 +75,7 @@ public class OperationsController {
     ) {
         return this.datasetManagerService.getTextByStudentAnswer(uuid)
                 .flatMap(text -> {
-                    if (this.textEventHandler.hasValidText(text)) {
+                    if (ModelValidator.hasValidTranslationText(text)) {
                         return this.textEventHandler.startProcessingText(text);
                     } else {
                         return Mono.error(new IllegalArgumentException("The text is not valid for processing"));
@@ -77,12 +85,20 @@ public class OperationsController {
                 .onErrorResume(error -> Mono.just(new OperationResponse(false, error.toString())));
     }
 
+    @PostMapping("/similarity-matrices/texts/{uuid}")
+    public Mono<OperationResponse> calculateSimilarityMatricesByText(
+            @PathVariable("uuid") String uuid
+    ) {
+        return this.nlpCoordinator.processSimilarityMatrixByText(uuid);
+
+    }
+
     @PostMapping("/process-text/questions/{uuid}/student-answers")
     public Mono<OperationResponse> processStudentAnswerTextById(
             @PathVariable("uuid") String uuid
     ) {
         return this.datasetManagerService.getStudentAnswersByQuestion(uuid)
-                .filter(studentAnswer -> this.textEventHandler.hasValidText(studentAnswer.getText()))
+                .filter(studentAnswer -> ModelValidator.hasValidTranslationText(studentAnswer.getText()))
                 .flatMap(studentAnswer -> this.datasetManagerService.getTextByStudentAnswer(studentAnswer.getUuid())
                         .flatMap(this.textEventHandler::startProcessingText)
                         .map(result -> Tuples.of(studentAnswer.getUuid(), result))
@@ -92,7 +108,7 @@ public class OperationsController {
                     List<String> success = new LinkedList<>();
                     List<String> error = new LinkedList<>();
                     tuples.forEach(tuple -> {
-                        if (tuple.getT2()) {
+                        if (tuple.getT2().getSuccess()) {
                             success.add(tuple.getT1());
                         } else {
                             error.add(tuple.getT1());
