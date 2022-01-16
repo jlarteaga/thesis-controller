@@ -2,6 +2,7 @@ package dev.jlarteaga.coordinator.controller;
 
 import dev.jlarteaga.coordinator.controller.dto.OperationResponse;
 import dev.jlarteaga.coordinator.messaging.datasetmanager.TextEventHandler;
+import dev.jlarteaga.coordinator.messaging.nlpmanager.NlpCoordinator;
 import dev.jlarteaga.coordinator.webclient.DatasetManagerService;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,10 +21,16 @@ public class OperationsController {
 
     private final DatasetManagerService datasetManagerService;
     private final TextEventHandler textEventHandler;
+    private final NlpCoordinator nlpCoordinator;
 
-    public OperationsController(DatasetManagerService datasetManagerService, TextEventHandler textEventHandler) {
+    public OperationsController(
+            DatasetManagerService datasetManagerService,
+            TextEventHandler textEventHandler,
+            NlpCoordinator nlpCoordinator
+    ) {
         this.datasetManagerService = datasetManagerService;
         this.textEventHandler = textEventHandler;
+        this.nlpCoordinator = nlpCoordinator;
     }
 
     @PostMapping("/process-text/texts/{uuid}")
@@ -75,6 +82,14 @@ public class OperationsController {
                 })
                 .map(success -> new OperationResponse(true, "The text is being processed"))
                 .onErrorResume(error -> Mono.just(new OperationResponse(false, error.toString())));
+    }
+
+    @PostMapping("/similarity-matrices/texts/{uuid}")
+    public Mono<OperationResponse> calculateSimilarityMatricesByText(
+            @PathVariable("uuid") String uuid
+    ) {
+        return this.nlpCoordinator.processSimilarityMatrixByText(uuid);
+
     }
 
     @PostMapping("/process-text/questions/{uuid}/student-answers")

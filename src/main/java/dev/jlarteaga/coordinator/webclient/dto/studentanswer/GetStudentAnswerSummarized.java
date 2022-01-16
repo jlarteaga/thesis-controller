@@ -1,10 +1,8 @@
 package dev.jlarteaga.coordinator.webclient.dto.studentanswer;
 
-import dev.jlarteaga.coordinator.webclient.dto.text.GetTextSummarizedDTO;
-
 import java.util.Map;
 
-public interface GetStudentAnswerSummarized {
+public interface GetStudentAnswerSummarized<T> {
     String getUuid();
 
     void setUuid(String uuid);
@@ -21,7 +19,7 @@ public interface GetStudentAnswerSummarized {
 
     void setStudent(Integer student);
 
-    GetTextSummarizedDTO getText();
+    T getText();
 
-    void setText(GetTextSummarizedDTO text);
+    void setText(T text);
 }
