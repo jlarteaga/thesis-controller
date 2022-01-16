@@ -9,3 +9,5 @@
 - `SPRING_RABBITMQ_USERNAME`: sets the rabbitmq username.
 - `SPRING_RABBITMQ_PASSWORD`: sets the rabbitmq password.
 - `DATASET_MANAGER_URL`: sets the url to communicate with the dataset.
+- `DATASET_MANAGER_USER`: sets the user to authenticate with the dataset.
+- `DATASET_MANAGER_PASSWORD`: sets the password to authenticate with the dataset.
