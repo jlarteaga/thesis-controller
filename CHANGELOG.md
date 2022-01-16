@@ -9,6 +9,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Added `POST /operations/similarity-matrices/texts/{uuid}` to process matrix-similarity of a given text.
+- Added handler to trigger a matrix-similarity analysis when a text has been processed.
+- Added handler for `student-answer-patched` events.
+
 ### Changed
 
 ### Removed
