@@ -12,11 +12,11 @@ public class ConfigurationService {
     private String datasetManagerUrl;
 
     @Getter
-    @Value("dataset-manager.user")
+    @Value("${dataset-manager.user}")
     private String datasetManagerUser;
 
     @Getter
-    @Value("dataset-manager.password")
+    @Value("${dataset-manager.password}")
     private String datasetManagerPassword;
 
     @Getter
