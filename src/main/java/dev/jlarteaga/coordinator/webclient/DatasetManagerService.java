@@ -52,7 +52,7 @@ public class DatasetManagerService {
 
     private Flux<String> generateAuthenticationFlux() {
         return Flux.interval(Duration.ZERO, Duration.ofHours(1L))
-                .flatMap((value) -> this.login("joedon@incognito.org", "secret123.")
+                .flatMap((value) -> this.login(this.configurationService.getDatasetManagerUser(), this.configurationService.getDatasetManagerPassword())
                         .retryWhen(Retry.backoff(5, Duration.ofSeconds(5L)))
                         .map(LoginResponseDTO::getToken)
                 )

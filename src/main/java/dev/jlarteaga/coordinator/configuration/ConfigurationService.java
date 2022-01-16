@@ -12,6 +12,14 @@ public class ConfigurationService {
     private String datasetManagerUrl;
 
     @Getter
+    @Value("dataset-manager.user")
+    private String datasetManagerUser;
+
+    @Getter
+    @Value("dataset-manager.password")
+    private String datasetManagerPassword;
+
+    @Getter
     @Value("${security.secret}")
     private String securitySecret;
 }
