@@ -9,10 +9,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Added `POST /operations/similarity-matrices/texts/{uuid}` to process matrix-similarity of a given text.
-- Added handler to trigger a matrix-similarity analysis when a text has been processed.
-- Added handler for `student-answer-patched` events.
-
 ### Changed
 
 ### Removed
@@ -20,6 +16,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 ### Security
+
+## [1.0.0]
+
+### Added
+
+- Added `POST /operations/similarity-matrices/texts/{uuid}` to process matrix-similarity of a given text.
+- Added handler to trigger a matrix-similarity analysis when a text has been processed.
+- Added handler for `student-answer-patched` events.
 
 ## [0.1.0]
 
@@ -32,7 +36,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Added `POST /process-text/questions/{uuid}/student-answers` to process all the student-answers of a question.
 - Dockerized project.
 
-[Unreleased]: https://github.com/jlarteaga/thesis-coordinator
+[Unreleased]: https://github.com/jlarteaga/thesis-coordinator/compare/1.0.0...develop
+
+[1.0.0]: https://github.com/jlarteaga/thesis-coordinator/compare/0.1.0...1.0.0
 
 [0.1.0]: https://github.com/jlarteaga/thesis-coordinator/releases/tag/0.1.0
 
