@@ -67,37 +67,53 @@ public class DatasetManagerService {
     }
 
     public Flux<GetQuestionSummarizedDTO> getQuestions() {
-        return unauthorizedWebClient.get().uri("questions")
+        return unauthorizedWebClient.get()
+                .uri("questions")
                 .retrieve()
                 .bodyToFlux(GetQuestionSummarizedDTO.class);
     }
 
     public Mono<GetTextMetaDetailedDTO> getText(String uuid) {
-        return unauthorizedWebClient.get().uri("texts/{uuid}", uuid)
+        return unauthorizedWebClient.get()
+                .uri("texts/{uuid}", uuid)
                 .retrieve()
                 .bodyToMono(GetTextMetaDetailedDTO.class);
     }
 
     public Mono<GetTextMetaDetailedDTO> getTextByQuestion(String uuid) {
-        return unauthorizedWebClient.get().uri("questions/{uuid}/text", uuid)
+        return unauthorizedWebClient.get()
+                .uri("questions/{uuid}/text", uuid)
                 .retrieve()
-                .bodyToMono(GetTextMetaDetailedDTO.class);
+                .bodyToMono(GetTextMetaDetailedDTO.class)
+                .map(text -> {
+                    text.setParent(uuid);
+                    text.setParentType("question");
+                    return text;
+                });
     }
 
     public Mono<GetTextMetaDetailedDTO> getTextByStudentAnswer(String uuid) {
-        return unauthorizedWebClient.get().uri("student-answers/{uuid}/text", uuid)
+        return unauthorizedWebClient.get()
+                .uri("student-answers/{uuid}/text", uuid)
                 .retrieve()
-                .bodyToMono(GetTextMetaDetailedDTO.class);
+                .bodyToMono(GetTextMetaDetailedDTO.class)
+                .map(text -> {
+                    text.setParent(uuid);
+                    text.setParentType("student-answer");
+                    return text;
+                });
     }
 
     public Flux<GetStudentAnswerSummarizedDTO> getStudentAnswersByQuestion(String uuid) {
-        return unauthorizedWebClient.get().uri("questions/{uuid}/student-answers", uuid)
+        return unauthorizedWebClient.get()
+                .uri("questions/{uuid}/student-answers", uuid)
                 .retrieve()
                 .bodyToFlux(GetStudentAnswerSummarizedDTO.class);
     }
 
     public Mono<GetStudentAnswerSingleDetailedDTO> getStudentAnswer(String uuid) {
-        return unauthorizedWebClient.get().uri("student-answers/{uuid}", uuid)
+        return unauthorizedWebClient.get()
+                .uri("student-answers/{uuid}", uuid)
                 .retrieve()
                 .bodyToMono(GetStudentAnswerSingleDetailedDTO.class);
     }
