@@ -30,13 +30,19 @@ public class NlpManagerService {
         this.matrixSimilarityExchange = matrixSimilarityExchange;
     }
 
-    public Mono<Boolean> sendProcessTextRequest(String uuid, String text) {
+    public Mono<OperationResponse> sendProcessTextRequest(String uuid, String text) {
         return Mono.create(sink -> {
             try {
                 nlpRabbitTemplate.convertAndSend(processTextExchange.getName(), REQUEST_KEY, new ProcessTextRequestPayload(uuid, text));
-                sink.success(true);
+                sink.success(new OperationResponse(
+                        true,
+                        "The text was sent to the processing queue"
+                ));
             } catch (Exception e) {
-                sink.success(false);
+                sink.success(new OperationResponse(
+                        false,
+                        e.getMessage()
+                ));
             }
         });
     }

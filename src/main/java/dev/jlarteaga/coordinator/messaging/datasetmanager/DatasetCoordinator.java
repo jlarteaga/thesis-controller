@@ -8,19 +8,21 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
 import java.io.IOException;
+import java.util.List;
 
 import static dev.jlarteaga.coordinator.messaging.MessagingConfiguration.DATASET_EVENTS_QUEUE_NAME;
 
 @Component
 public class DatasetCoordinator {
 
-    private final TextEventHandler textCoordinator;
     Logger logger = LoggerFactory.getLogger(DatasetCoordinator.class);
+    private final List<DatasetEventHandler> eventHandlers;
 
-    public DatasetCoordinator(TextEventHandler textCoordinator) {
-        this.textCoordinator = textCoordinator;
+    public DatasetCoordinator(TextEventHandler textEventHandler) {
+        eventHandlers = List.of(textEventHandler);
     }
 
     @RabbitListener(
@@ -31,20 +33,21 @@ public class DatasetCoordinator {
             DatasetEvent event,
             Channel channel,
             @Header(AmqpHeaders.DELIVERY_TAG) long tag) {
-        if (TextEventHandler.PATTERNS.contains(event.getPattern())) {
-            textCoordinator.dispatch(event.getPattern(), event.getData())
-                    .subscribe(result -> {
-                        try {
-                            if (result) {
-                                channel.basicAck(tag, false);
-                            } else {
-                                logger.error("Could not process payload", event);
-                                channel.basicNack(tag, false, false);
-                            }
-                        } catch (IOException ioe) {
-                            ioe.printStackTrace();
+        Flux.fromIterable(eventHandlers)
+                .filter(eventHandler -> eventHandler.canHandlePattern(event.getPattern()))
+                .flatMap(eventHandler -> eventHandler.dispatch(event.getPattern(), event.getData()))
+                .subscribe(operationResponse -> {
+                    try {
+                        if (operationResponse.getSuccess()) {
+                            logger.info(operationResponse.getMessage());
+                            channel.basicAck(tag, false);
+                        } else {
+                            logger.error(operationResponse.getMessage(), event);
+                            channel.basicNack(tag, false, false);
                         }
-                    });
-        }
+                    } catch (IOException ioe) {
+                        ioe.printStackTrace();
+                    }
+                });
     }
 }
