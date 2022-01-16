@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.Map;
 
 @Data
-public class GetStudentAnswerSummarizedDTO implements GetStudentAnswerSummarized {
+public class GetStudentAnswerSummarizedDTO implements GetStudentAnswerSummarized<GetTextSummarizedDTO> {
     private String uuid;
     private Double grade;
     private Map<String, Double> grades;

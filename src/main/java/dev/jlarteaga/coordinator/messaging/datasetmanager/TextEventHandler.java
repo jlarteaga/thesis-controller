@@ -1,13 +1,13 @@
 package dev.jlarteaga.coordinator.messaging.datasetmanager;
 
+import dev.jlarteaga.coordinator.controller.dto.OperationResponse;
 import dev.jlarteaga.coordinator.messaging.nlpmanager.NlpManagerService;
 import dev.jlarteaga.coordinator.messaging.payload.TextCreatedEventPayload;
 import dev.jlarteaga.coordinator.messaging.payload.TextPatchedEventPayload;
 import dev.jlarteaga.coordinator.model.TextProcessingStatus;
+import dev.jlarteaga.coordinator.utils.ModelValidator;
 import dev.jlarteaga.coordinator.webclient.DatasetManagerService;
 import dev.jlarteaga.coordinator.webclient.dto.text.GetTextMetaDetailedDTO;
-import dev.jlarteaga.coordinator.webclient.dto.text.GetTextSummarized;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -17,11 +17,8 @@ import java.util.Map;
 import java.util.Set;
 
 @Component
-public class TextEventHandler {
+public class TextEventHandler extends DatasetEventHandler {
 
-    public static final Set<String> PATTERNS = Set.of(
-            TextCreatedEventPayload.PATTERN,
-            TextPatchedEventPayload.PATTERN);
     private final NlpManagerService nlpManagerService;
     private final DatasetManagerService datasetManagerService;
     Logger logger = LoggerFactory.getLogger(TextEventHandler.class);
@@ -30,11 +27,13 @@ public class TextEventHandler {
             NlpManagerService nlpManagerService,
             DatasetManagerService datasetManagerService
     ) {
+        super(Set.of(TextCreatedEventPayload.PATTERN, TextPatchedEventPayload.PATTERN));
         this.nlpManagerService = nlpManagerService;
         this.datasetManagerService = datasetManagerService;
     }
 
-    public Mono<Boolean> dispatch(String pattern, Map<String, Object> unparsedPayload) {
+    @Override
+    public Mono<OperationResponse> dispatch(String pattern, Map<String, Object> unparsedPayload) {
         try {
             if (TextCreatedEventPayload.PATTERN.equals(pattern)) {
                 return this.processTextCreatedEvent(TextCreatedEventPayload.fromUnparsedPayload(unparsedPayload));
@@ -45,36 +44,36 @@ public class TextEventHandler {
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return Mono.just(false);
+            return Mono.just(new OperationResponse(
+                    false,
+                    e.getMessage()
+            ));
         }
     }
 
-    private Mono<Boolean> processTextPatchedEvent(TextPatchedEventPayload payload) {
+    private Mono<OperationResponse> processTextPatchedEvent(TextPatchedEventPayload payload) {
         return this.datasetManagerService.getText(payload.getUuid())
                 .flatMap(text -> {
                     if (payload.getKeys().contains("sent") ||
                             ("not-proc".equals(text.getProcessingStatus()) &&
-                                    this.hasValidText(text))
+                                    ModelValidator.hasValidTranslationText(text))
                     ) {
                         return this.startProcessingText(text);
                     } else {
-                        return Mono.just(true);
+                        return Mono.just(new OperationResponse(
+                                true,
+                                "There is nothing to do with this event"
+                        ));
                     }
                 });
     }
 
-    public boolean hasValidText(GetTextSummarized text) {
-        return Strings.isNotBlank(text.getSent()) &&
-                text.getStatus().startsWith("tr-") &&
-                !"tr-auto".equals(text.getStatus());
-    }
-
-    private Mono<Boolean> processTextCreatedEvent(TextCreatedEventPayload payload) {
+    private Mono<OperationResponse> processTextCreatedEvent(TextCreatedEventPayload payload) {
         return this.datasetManagerService.getText(payload.getUuid())
                 .flatMap(this::startProcessingText);
     }
 
-    public Mono<Boolean> startProcessingText(GetTextMetaDetailedDTO text) {
+    public Mono<OperationResponse> startProcessingText(GetTextMetaDetailedDTO text) {
         return this.datasetManagerService.updateTextProcessingStatus(text.getUuid(), TextProcessingStatus.Processing, true)
                 .flatMap(response -> this.nlpManagerService.sendProcessTextRequest(text.getUuid(), text.getSent()));
     }
