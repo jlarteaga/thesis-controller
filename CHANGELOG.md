@@ -17,6 +17,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Security
 
+## [1.0.1]
+
+### Added
+
+- Added configuration settings to set user/password credentials for the dataset.
+
 ## [1.0.0]
 
 ### Added
@@ -36,7 +42,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Added `POST /process-text/questions/{uuid}/student-answers` to process all the student-answers of a question.
 - Dockerized project.
 
-[Unreleased]: https://github.com/jlarteaga/thesis-coordinator/compare/1.0.0...develop
+[Unreleased]: https://github.com/jlarteaga/thesis-coordinator/compare/1.0.1...develop
+
+[1.0.1]: https://github.com/jlarteaga/thesis-coordinator/compare/1.0.0...1.0.1
 
 [1.0.0]: https://github.com/jlarteaga/thesis-coordinator/compare/0.1.0...1.0.0
 
