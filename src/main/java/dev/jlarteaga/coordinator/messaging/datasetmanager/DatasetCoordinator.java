@@ -21,8 +21,11 @@ public class DatasetCoordinator {
     Logger logger = LoggerFactory.getLogger(DatasetCoordinator.class);
     private final List<DatasetEventHandler> eventHandlers;
 
-    public DatasetCoordinator(TextEventHandler textEventHandler) {
-        eventHandlers = List.of(textEventHandler);
+    public DatasetCoordinator(
+            TextEventHandler textEventHandler,
+            QuestionEventHandler questionEventHandler
+    ) {
+        eventHandlers = List.of(textEventHandler, questionEventHandler);
     }
 
     @RabbitListener(
