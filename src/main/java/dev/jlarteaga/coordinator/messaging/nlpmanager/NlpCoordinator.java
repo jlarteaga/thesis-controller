@@ -116,7 +116,34 @@ public class NlpCoordinator {
     }
 
     private Mono<OperationResponse> processSimilarityMatrixForQuestionText(GetTextMetaDetailedDTO text) {
-        return null;
+        if (!ModelValidator.hasProcessedText(text)) {
+            return Mono.just(new OperationResponse(
+                    false,
+                    "The reference answer has no processed text yet."
+            ));
+        }
+        return this.datasetManagerService.getStudentAnswersByQuestion(text.getParent())
+                .filter(studentAnswer -> ModelValidator.hasProcessedText(studentAnswer.getText()))
+                .flatMap(studentAnswer -> this.processSimilarityMatrixByText(studentAnswer.getText().getUuid())
+                        .map(operationResponse -> Tuples.of(operationResponse.getSuccess(), studentAnswer.getUuid())))
+                .collectList()
+                .map(tuples -> {
+                    List<String> success = new LinkedList<>();
+                    List<String> error = new LinkedList<>();
+                    tuples.forEach(tuple -> {
+                        if (tuple.getT1()) {
+                            success.add(tuple.getT2());
+                        } else {
+                            error.add(tuple.getT2());
+                        }
+                    });
+                    return new OperationResponse(
+                            error.isEmpty(),
+                            error.isEmpty()
+                                    ? "Successfully sent requests for the student answers: [" + Strings.join(success.iterator(), ',') + "]"
+                                    : "The following student answers could not be processed: [" + Strings.join(success.iterator(), ',') + "]"
+                    );
+                });
     }
 
     private Mono<OperationResponse> processSimilarityMatrixForStudentAnswerText(GetTextMetaDetailedDTO text) {
