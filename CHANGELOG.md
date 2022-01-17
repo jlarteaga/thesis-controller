@@ -17,13 +17,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Security
 
-## [1.0.2]
+## [1.0.3]
 
 ### Added
 
-### Changed
+- Added CORS configuration.
 
-### Removed
+## [1.0.2]
 
 ### Fixed
 
@@ -56,7 +56,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Added `POST /process-text/questions/{uuid}/student-answers` to process all the student-answers of a question.
 - Dockerized project.
 
-[Unreleased]: https://github.com/jlarteaga/thesis-coordinator/compare/1.0.2...develop
+[Unreleased]: https://github.com/jlarteaga/thesis-coordinator/compare/1.0.3...develop
+
+[1.0.3]: https://github.com/jlarteaga/thesis-coordinator/compare/1.0.2...1.0.3
 
 [1.0.2]: https://github.com/jlarteaga/thesis-coordinator/compare/1.0.1...1.0.2
 
