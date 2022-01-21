@@ -93,6 +93,91 @@ public class OperationsController {
 
     }
 
+    @PostMapping("/process-text/questions")
+    public Mono<OperationResponse> processAllQuestionsForDataset() {
+        return this.datasetManagerService.getQuestions()
+                .filter(question -> ModelValidator.hasValidTranslationText(question.getAnswer()))
+                .flatMap(question -> this.datasetManagerService.getTextByQuestion(question.getUuid())
+                        .flatMap(this.textEventHandler::startProcessingText)
+                        .map(result -> Tuples.of(question.getUuid(), result))
+                )
+                .collectList()
+                .map(tuples -> {
+                    List<String> success = new LinkedList<>();
+                    List<String> error = new LinkedList<>();
+                    tuples.forEach(tuple -> {
+                        if (tuple.getT2().getSuccess()) {
+                            success.add(tuple.getT1());
+                        } else {
+                            error.add(tuple.getT1());
+                        }
+                    });
+                    return new OperationResponse(
+                            error.isEmpty(),
+                            error.isEmpty()
+                                    ? "Processed: [" + String.join(",", success) + "]"
+                                    : "Failed: [" + String.join(",", error) + "]"
+                    );
+                });
+    }
+
+    @PostMapping("/process-text/questions/student-answers")
+    public Mono<OperationResponse> processAllStudentAnswersForDataset() {
+        return this.datasetManagerService.getQuestions()
+                .flatMap(question -> this.datasetManagerService.getStudentAnswersByQuestion(question.getUuid())
+                        .filter(studentAnswer -> ModelValidator.hasValidTranslationText(studentAnswer.getText()))
+                        .flatMap(
+                                studentAnswer -> this.datasetManagerService.getTextByStudentAnswer(studentAnswer.getUuid())
+                                        .flatMap(this.textEventHandler::startProcessingText)
+                                        .map(result -> Tuples.of(studentAnswer.getUuid(), result))
+                        )
+                )
+                .collectList()
+                .map(tuples -> {
+                    List<String> success = new LinkedList<>();
+                    List<String> error = new LinkedList<>();
+                    tuples.forEach(tuple -> {
+                        if (tuple.getT2().getSuccess()) {
+                            success.add(tuple.getT1());
+                        } else {
+                            error.add(tuple.getT1());
+                        }
+                    });
+                    return new OperationResponse(
+                            error.isEmpty(),
+                            error.isEmpty()
+                                    ? "Processed: [" + String.join(",", success) + "]"
+                                    : "Failed: [" + String.join(",", error) + "]"
+                    );
+                });
+    }
+
+    @PostMapping("/similarity-matrices/student-answers")
+    public Mono<OperationResponse> processAllSimilarityMatricesForDataset() {
+        return this.datasetManagerService.getQuestions()
+                .filter(question -> ModelValidator.hasValidTranslationText(question.getAnswer()))
+                .flatMap(question -> this.nlpCoordinator.processSimilarityMatrixByText(question.getAnswer().getUuid())
+                        .map(result -> Tuples.of(question.getUuid(), result)))
+                .collectList()
+                .map(tuples -> {
+                    List<String> success = new LinkedList<>();
+                    List<String> error = new LinkedList<>();
+                    tuples.forEach(tuple -> {
+                        if (tuple.getT2().getSuccess()) {
+                            success.add(tuple.getT1());
+                        } else {
+                            error.add(tuple.getT1());
+                        }
+                    });
+                    return new OperationResponse(
+                            error.isEmpty(),
+                            error.isEmpty()
+                                    ? "Processed: [" + String.join(",", success) + "]"
+                                    : "Failed: [" + String.join(",", error) + "]"
+                    );
+                });
+    }
+
     @PostMapping("/process-text/questions/{uuid}/student-answers")
     public Mono<OperationResponse> processStudentAnswerTextById(
             @PathVariable("uuid") String uuid

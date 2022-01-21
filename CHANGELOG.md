@@ -9,6 +9,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Added `POST /process-text/questions` to process the texts of all questions.
+- Added `POST /process-text/student-answers` to process the texts of all student answers.
+- Added `POST /similarity-matrices/student-answers` to process the similarity matrices of all student answers.
+
 ### Changed
 
 ### Removed
