@@ -9,10 +9,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Added `POST /process-text/questions` to process the texts of all questions.
-- Added `POST /process-text/student-answers` to process the texts of all student answers.
-- Added `POST /similarity-matrices/student-answers` to process the similarity matrices of all student answers.
-
 ### Changed
 
 ### Removed
@@ -20,6 +16,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 ### Security
+
+## [1.1.0]
+
+### Added
+
+- Added `POST /process-text/questions` to process the texts of all questions.
+- Added `POST /process-text/student-answers` to process the texts of all student answers.
+- Added `POST /similarity-matrices/student-answers` to process the similarity matrices of all student answers.
 
 ## [1.0.3]
 
@@ -60,7 +64,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Added `POST /process-text/questions/{uuid}/student-answers` to process all the student-answers of a question.
 - Dockerized project.
 
-[Unreleased]: https://github.com/jlarteaga/thesis-coordinator/compare/1.0.3...develop
+[Unreleased]: https://github.com/jlarteaga/thesis-coordinator/compare/1.1.0...develop
+
+[1.1.0]: https://github.com/jlarteaga/thesis-coordinator/compare/1.03...1.1.0
 
 [1.0.3]: https://github.com/jlarteaga/thesis-coordinator/compare/1.0.2...1.0.3
 
