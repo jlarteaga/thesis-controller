@@ -6,6 +6,7 @@ COPY gradle /app/gradle
 RUN ./gradlew build
 
 FROM openjdk:11-jre-slim
+RUN apt-get update && apt-get install -y curl
 WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar /app/coordinator.jar
 EXPOSE 3005
